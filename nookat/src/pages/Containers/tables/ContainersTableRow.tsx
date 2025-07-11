@@ -3,7 +3,7 @@ import { TableCell } from "../../../components/ui/table";
 import { IContainer, IContainerPortMapping } from "../Containers";
 import { TableRow } from "../../../components/ui/table";
 import Checkbox from "../../../components/form/input/Checkbox";
-import { MoreDotIcon, TrashBinIcon, InfoIcon } from "../../../icons";
+import { MoreDotIcon, TrashBinIcon, InfoIcon, VideoIcon } from "../../../icons";
 import { Dropdown } from "../../../components/ui/dropdown/Dropdown";
 import { DropdownItem } from "../../../components/ui/dropdown/DropdownItem";
 
@@ -37,7 +37,11 @@ const ActionsCell = (props: { container: IContainer }) => {
     return (
         <>
             <button onClick={() => { }}>
-                <InfoIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+                {container.status === "Running" ? (
+                    <InfoIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+                ) : (
+                    <VideoIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+                )}
             </button>
 
             <button onClick={() => { }}>

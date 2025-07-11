@@ -8,7 +8,7 @@ import {
   PlugInIcon,
   HorizontaLDots,
   ListIcon,
-  PageIcon,
+  ShootingStarIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -22,7 +22,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <PageIcon />,
+    icon: <ShootingStarIcon />,
     name: "Containers",
     path: "/",
   },
