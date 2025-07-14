@@ -189,15 +189,25 @@ function organizeContainers(containers: ContainerData[]): ContainerDisplayData {
     }
   });
 
+  // Sort containers by creation time (newest first)
+  const sortByCreatedTime = (a: ContainerData, b: ContainerData) => b.Created - a.Created;
+
   const groups: ContainerGroup[] = Object.entries(groupedContainers).map(([projectName, containers]) => ({
     projectName,
-    containers: containers.sort((a, b) => b.State.localeCompare(a.State)),
+    containers: containers.sort(sortByCreatedTime),
     isExpanded: true
   }));
 
+  // Sort groups by the creation time of their newest container
+  const sortedGroups = groups.sort((a, b) => {
+    const newestA = Math.max(...a.containers.map(c => c.Created));
+    const newestB = Math.max(...b.containers.map(c => c.Created));
+    return newestB - newestA;
+  });
+
   return {
-    individualContainers: individualContainers.sort((a, b) => b.State.localeCompare(a.State)),
-    groupedContainers: groups
+    individualContainers: individualContainers.sort(sortByCreatedTime),
+    groupedContainers: sortedGroups
   };
 }
 
