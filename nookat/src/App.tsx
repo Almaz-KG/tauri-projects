@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Image, Network, HardDrive, Settings, Monitor } from 'lucide-react';
+import { Container, Image, Network, HardDrive, Monitor } from 'lucide-react';
 import { ContainersTab } from './pages/containers';
 import { ImagesTab } from './pages/images';
 import { NetworksTab } from './pages/networks';
@@ -43,11 +43,6 @@ function App() {
           <div className="flex items-center gap-3">
             <Container className="text-blue-400" size={24} />
             <h1 className="text-xl font-bold">Nookat</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-gray-400 hover:text-white transition-colors">
-              <Settings size={20} />
-            </button>
           </div>
         </div>
       </header>
