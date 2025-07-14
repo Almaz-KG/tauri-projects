@@ -122,14 +122,26 @@ function formatContainerPortMapping(ports: string[]) {
   if (ports && ports.length > 0) {
     const mappings = ports.map(port => {
       const privatePort = port.PrivatePort;
-      const publicPort = port.PublicPort; 
-      return `${privatePort}:${publicPort}`;
+      const publicPort = port.PublicPort;
+      if (privatePort !== publicPort && publicPort) {
+        return `${privatePort}:${publicPort}`;
+      }
+      return privatePort;
     });
     const uniqueMappings = Array.from(new Set(mappings));
     return uniqueMappings.join(", ");
   }
   return "No port mapping";
 }
+
+function formatContainerCreatedDaysAgo(created: number) {
+  const date = new Date(created * 1000);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - date.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return `${diffDays} days ago`;
+}
+
 
 function formatContainerCreated(created: number) {
   const date = new Date(created * 1000);
@@ -187,21 +199,28 @@ export const ContainersTab: React.FC = () => {
       </div>
 
       <div className="grid gap-4">
-        {filteredContainers.map(container => (
+        {filteredContainers.sort((a, b) => b.State.localeCompare(a.State)).map(container => (
           <div key={container.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Container size={20} className="text-blue-400" />
-                <div>
+              <div className="flex items-center gap-4 truncate">
+                <Container size={20} className={`text-${container.State === 'running' ? 'green' : 'red'}-400`} />
+                <div className="truncate max-w-lg">
                   <h3 className="font-semibold text-white truncate max-w-xxxl">{formatContainerName(container)}</h3>
                   <p className="text-sm text-gray-400 truncate max-w-xxxl">{formatContainerImage(container.Image)}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-4">
                 <StatusBadge status={container.State ?? 'unknown'} />
-                <div className="text-sm text-gray-400 text-right">
-                  <p>Created: {formatContainerCreated(container.Created)}</p>
-                  <p>Ports: {formatContainerPortMapping(container.Ports)}</p>
+                <div className="text-sm text-gray-400 text-right truncate max-w-xs">
+                  <p className="truncate max-w-xs">Created:
+                    <span className="hidden lg:inline relative group cursor-pointer">
+                      {formatContainerCreatedDaysAgo(container.Created)}
+                      <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
+                        {formatContainerCreated(container.Created)}
+                      </span>
+                    </span>
+                  </p>
+                  <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.Ports)}</p>
                 </div>
                 <ContainerActions container={container} />
               </div>

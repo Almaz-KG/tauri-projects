@@ -5,11 +5,12 @@ import { useState, useEffect } from "react";
 
 interface VolumeData {
   id: string;
-  name: string;
-  driver: string;
-  mountpoint: string;
-  created: string;
-  size: string;
+  Name: string;
+  Driver: string;
+  Mountpoint: string;
+  CreatedAt: string;
+  Scope: string;
+  Labels: string[];
 }
 
 
@@ -20,6 +21,7 @@ export const VolumesTab: React.FC = () => {
     try {
       const result = await invoke<VolumeData[]>("list_volumes");
       setVolumes(result);
+      console.log(result);
     } catch (error) {
       console.error("Error getting volumes:", error);
     }
@@ -46,20 +48,17 @@ export const VolumesTab: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <HardDrive size={20} className="text-yellow-400" />
-                <div>
-                  <h3 className="font-semibold text-white">{volume.name}</h3>
-                  <p className="text-sm text-gray-400 font-mono">{volume.mountpoint}</p>
+                <div className="truncate text-ellipsis max-w-lg">
+                  <h3 className="font-semibold text-white">{volume.Name}</h3>
+                  <p className="text-sm text-gray-400 font-mono">{volume.Mountpoint}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-8">
+              <div className="flex items-center gap-4">
                 <div className="text-sm text-gray-400">
-                  <p>Driver: {volume.driver}</p>
-                </div>
-                <div className="text-sm text-gray-400">
-                  <p>Size: {volume.size}</p>
+                  <p>Driver: {volume.Driver}</p>
                 </div>
                 <div className="text-sm text-gray-400 text-right">
-                  <p>Created: {volume.created}</p>
+                  <p>Created: {new Date(volume.CreatedAt).toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button className="p-1 text-gray-400 hover:text-red-400 transition-colors">

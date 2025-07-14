@@ -1,10 +1,10 @@
 mod entities;
 
+use crate::entities::list_containers;
+use crate::entities::list_images;
+use crate::entities::list_networks;
+use crate::entities::list_volumes;
 use crate::entities::SystemInfo;
-use crate::entities::{list_containers};
-use crate::entities::{list_images};
-use crate::entities::{list_networks};
-use crate::entities::{list_volumes};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]

@@ -3,12 +3,31 @@ import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 
 interface NetworkData {
-  id: string;
-  name: string;
-  driver: string;
-  scope: string;
-  created: string;
-  containers: number;
+  Attachable: boolean;
+  ConfigFrom: boolean;
+  ConfigOnly: boolean;
+  Containers: string[];
+  Created: string;
+  Driver: string;
+  EnableIPv6: boolean;
+  Id: string;
+  Ingress: boolean;
+  Internal: boolean;
+  Labels: string[];
+  Name: string;
+  Options: string[];
+  Scope: string;
+}
+
+function formatContainers(containers: string[] | null | undefined) {
+  if (!Array.isArray(containers) || containers.length === 0) {
+    return "No containers";
+  }
+  return containers.join(", ");
+}
+
+function formatCreated(created: string) {
+  return new Date(created).toLocaleString();
 }
 
 export const NetworksTab: React.FC = () => {
@@ -18,6 +37,7 @@ export const NetworksTab: React.FC = () => {
     try {
       const result = await invoke<NetworkData[]>("list_networks");
       setNetworks(result);
+      console.log(result);
     } catch (error) {
       console.error("Error getting networks:", error);
     }
@@ -40,24 +60,24 @@ export const NetworksTab: React.FC = () => {
 
       <div className="grid gap-4">
         {networks.map(network => (
-          <div key={network.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div key={network.Id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Network size={20} className="text-purple-400" />
                 <div>
-                  <h3 className="font-semibold text-white">{network.name}</h3>
-                  <p className="text-sm text-gray-400">Driver: {network.driver}</p>
+                  <h3 className="font-semibold text-white">{network.Name}</h3>
+                  <p className="text-sm text-gray-400">Driver: {network.Driver}</p>
                 </div>
               </div>
               <div className="flex items-center gap-8">
                 <div className="text-sm text-gray-400">
-                  <p>Scope: {network.scope}</p>
+                  <p>Scope: {network.Scope}</p>
                 </div>
                 <div className="text-sm text-gray-400">
-                  <p>Containers: {network.containers}</p>
+                  <p>Containers: {formatContainers(network.Containers)}</p>
                 </div>
                 <div className="text-sm text-gray-400 text-right">
-                  <p>Created: {network.created}</p>
+                  <p>Created: {formatCreated(network.Created)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button className="p-1 text-gray-400 hover:text-red-400 transition-colors">

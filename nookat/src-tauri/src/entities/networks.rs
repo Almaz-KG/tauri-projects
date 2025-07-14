@@ -1,42 +1,22 @@
-use serde::{Deserialize, Serialize};
+use bollard::models::Network;
+use bollard::query_parameters::ListNetworksOptionsBuilder;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Network {
-    pub id: String,
-    pub name: String,
-    pub driver: String,
-    pub scope: String,
-    pub created: String,
-    pub containers: u32,
+use bollard::Docker;
+
+async fn get_networks() -> Vec<Network> {
+    let docker = Docker::connect_with_local_defaults().unwrap();
+
+    let networks: Vec<bollard::secret::Network> = docker
+        .list_networks(Some(ListNetworksOptionsBuilder::new().build()))
+        .await
+        .unwrap();
+    return networks;
 }
 
 #[tauri::command]
-pub fn list_networks() -> Vec<Network> {
+pub async fn list_networks() -> Vec<Network> {
     println!("Listing networks");
-    return vec![
-        Network {
-            id: "1".to_string(),
-            name: "bridge".to_string(),
-            driver: "bridge".to_string(),
-            scope: "local".to_string(),
-            created: "1 week ago".to_string(),
-            containers: 3,
-        },
-        Network {
-            id: "2".to_string(),
-            name: "host".to_string(),
-            driver: "host".to_string(),
-            scope: "local".to_string(),
-            created: "1 week ago".to_string(),
-            containers: 0,
-        },
-        Network {
-            id: "3".to_string(),
-            name: "none".to_string(),
-            driver: "null".to_string(),
-            scope: "local".to_string(),
-            created: "1 week ago".to_string(),
-            containers: 0,
-        },
-    ];
+
+    let networks = get_networks().await;
+    return networks;
 }

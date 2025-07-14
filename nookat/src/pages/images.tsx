@@ -77,11 +77,11 @@ export const ImagesTab: React.FC = () => {
 
       <div className="grid gap-4">
         {filteredImages.map(image => (
-          <div key={image.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div key={image.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700 truncate">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Cloud size={20} className="text-green-400" />
-                <div>
+                <div className="truncate max-w-lg">
                   <h3 className="font-semibold text-white truncate max-w-xxxl">{image.repository} : {image.tag}</h3>
                   <p className="text-sm text-gray-400 font-mono truncate text-ellipsis max-w-xxxl">{image.id}</p>
                 </div>
