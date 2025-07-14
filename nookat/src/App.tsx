@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Image, Network, HardDrive, Monitor } from 'lucide-react';
+import { Container, Cloud, Network, HardDrive, Monitor } from 'lucide-react';
 import { ContainersTab } from './pages/containers';
 import { ImagesTab } from './pages/images';
 import { NetworksTab } from './pages/networks';
@@ -12,7 +12,7 @@ function App() {
 
   const tabs = [
     { id: 'containers', label: 'Containers', icon: Container },
-    { id: 'images', label: 'Images', icon: Image },
+    { id: 'images', label: 'Images', icon: Cloud },
     { id: 'networks', label: 'Networks', icon: Network },
     { id: 'volumes', label: 'Volumes', icon: HardDrive },
     { id: 'system', label: 'System', icon: Monitor },

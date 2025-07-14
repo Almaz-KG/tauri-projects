@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { Download, Search, Trash2, Upload, Image } from "lucide-react";
+import { Download, Search, Trash2, Upload, Cloud } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ImageData {
@@ -65,7 +65,7 @@ export const ImagesTab: React.FC = () => {
           <div key={image.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Image size={20} className="text-green-400" />
+                <Cloud size={20} className="text-green-400" />
                 <div>
                   <h3 className="font-semibold text-white">{image.repository}:{image.tag}</h3>
                   <p className="text-sm text-gray-400 font-mono">{image.imageId}</p>
