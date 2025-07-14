@@ -36,9 +36,9 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 select-none" data-tauri-drag-region>
+    <div className="h-screen bg-gray-900 text-white flex flex-col">
+      {/* Fixed Header */}
+      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 select-none flex-shrink-0" data-tauri-drag-region>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Container className="text-blue-400" size={24} />
@@ -47,9 +47,10 @@ function App() {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <nav className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen select-none">
+      {/* Content Area */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Fixed Sidebar */}
+        <nav className="w-64 bg-gray-800 border-r border-gray-700 flex-shrink-0 select-none">
           <div className="p-4">
             <div className="space-y-2">
               {tabs.map(tab => {
@@ -72,9 +73,11 @@ function App() {
           </div>
         </nav>
 
-        {/* Main content */}
-        <main className="flex-1 p-6 select-none">
-          {renderTabContent()}
+        {/* Scrollable Main Content */}
+        <main className="flex-1 overflow-auto select-none">
+          <div className="p-6">
+            {renderTabContent()}
+          </div>
         </main>
       </div>
     </div>
