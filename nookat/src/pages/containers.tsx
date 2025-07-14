@@ -1,4 +1,4 @@
-import { Container, Play, Plus, RotateCcw, Search, Square, Trash2 } from "lucide-react";
+import { Container, Play, RotateCcw, Search, Square, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { StatusBadge } from "../components/StatusBadge";
 
