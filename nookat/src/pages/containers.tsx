@@ -1,4 +1,4 @@
-import { Container, Play, RotateCcw, Search, Square, Trash2, Terminal, FileSearch, Folder } from "lucide-react";
+import { Container, Play, RotateCcw, Search, Square, Trash2, Terminal, FileSearch, Folder, ChevronDown, ChevronRight } from "lucide-react";
 import { StatusBadge } from "../components/StatusBadge";
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect } from "react";
@@ -9,10 +9,21 @@ export interface ContainerData {
   Image: string;
   State: 'running' | 'stopped' | 'paused' | 'restarting';
   Created: number;
-  Ports: string[];
-  size: string;
+  Ports: object[];
+  Size: string;
+  Labels: Record<string, string>;
 }
 
+interface ContainerGroup {
+  projectName: string;
+  containers: ContainerData[];
+  isExpanded: boolean;
+}
+
+interface ContainerDisplayData {
+  individualContainers: ContainerData[];
+  groupedContainers: ContainerGroup[];
+}
 
 export const ContainerActions: React.FC<{ container: ContainerData }> = ({ container }) => {
   return (
@@ -112,24 +123,24 @@ function formatContainerName(container: ContainerData) {
 }
 
 function formatContainerImage(image: string) {
-  if (image.includes("@")) {
+  if (image && image.includes("@")) {
     return image.split("@")[0];
   }
   return image;
 }
 
-function formatContainerPortMapping(ports: string[]) {
+function formatContainerPortMapping(ports: object[]) {
   if (ports && ports.length > 0) {
-    const mappings = ports.map(port => {
-      const privatePort = port.PrivatePort;
-      const publicPort = port.PublicPort;
-      if (privatePort !== publicPort && publicPort) {
-        return `${privatePort}:${publicPort}`;
-      }
-      return privatePort;
-    });
-    const uniqueMappings = Array.from(new Set(mappings));
-    return uniqueMappings.join(", ");
+    // TODO: Implement proper port mapping display
+    // const mappings = ports.map(port => {
+    //   if (port.public_port && port.private_port !== port.public_port) {
+    //     return `${port.private_port}:${port.public_port}`;
+    //   }
+    //   return port.private_port;
+    // });
+    // const uniqueMappings = Array.from(new Set(mappings));
+    // return uniqueMappings.join(", ");
+    return `${ports.length} port(s) mapped`;
   }
   return "No port mapping";
 }
@@ -142,7 +153,6 @@ function formatContainerCreatedDaysAgo(created: number) {
   return `${diffDays} days ago`;
 }
 
-
 function formatContainerCreated(created: number) {
   const date = new Date(created * 1000);
   const year = date.getFullYear();
@@ -154,14 +164,56 @@ function formatContainerCreated(created: number) {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+function getProjectName(container: ContainerData): string | null {
+  console.log(container);
+  console.log(container.Labels);
+  return container.Labels && container.Labels["com.docker.compose.project"] || null;
+}
+
+function organizeContainers(containers: ContainerData[]): ContainerDisplayData {
+  const individualContainers: ContainerData[] = [];
+  const groupedContainers: Record<string, ContainerData[]> = {};
+  
+  containers.forEach(container => {
+    const projectName = getProjectName(container);
+    
+    if (projectName) {
+      // Container belongs to a compose project
+      if (!groupedContainers[projectName]) {
+        groupedContainers[projectName] = [];
+      }
+      groupedContainers[projectName].push(container);
+    } else {
+      // Individual container (not part of a compose project)
+      individualContainers.push(container);
+    }
+  });
+
+  const groups: ContainerGroup[] = Object.entries(groupedContainers).map(([projectName, containers]) => ({
+    projectName,
+    containers: containers.sort((a, b) => b.State.localeCompare(a.State)),
+    isExpanded: true
+  }));
+
+  return {
+    individualContainers: individualContainers.sort((a, b) => b.State.localeCompare(a.State)),
+    groupedContainers: groups
+  };
+}
+
 // Containers tab component
 export const ContainersTab: React.FC = () => {
-  const [containers, setContainers] = useState<ContainerData[]>([]);
+  const [containerData, setContainerData] = useState<ContainerDisplayData>({
+    individualContainers: [],
+    groupedContainers: []
+  });
+  const [searchTerm, setSearchTerm] = useState('');
 
   async function getContainers() {
     try {
       const result = await invoke<ContainerData[]>("list_containers");
-      setContainers(result);
+      const organized = organizeContainers(result);
+      setContainerData(organized);
       console.log(result);
     } catch (error) {
       console.error("Error getting containers:", error);
@@ -172,13 +224,58 @@ export const ContainersTab: React.FC = () => {
     getContainers();
   }, []);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  // const filteredContainers = containers?.filter(container =>
-  //   container.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //   container.image.toLowerCase().includes(searchTerm.toLowerCase())
-  // );
+  const toggleGroup = (projectName: string) => {
+    setContainerData(prev => ({
+      ...prev,
+      groupedContainers: prev.groupedContainers.map(group => 
+        group.projectName === projectName 
+          ? { ...group, isExpanded: !group.isExpanded }
+          : group
+      )
+    }));
+  };
 
-  const filteredContainers = containers;
+  const filterContainers = (containers: ContainerData[]) => {
+    return containers.filter(container =>
+      formatContainerName(container).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      formatContainerImage(container.Image).toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  const filteredIndividualContainers = filterContainers(containerData.individualContainers);
+  const filteredGroupedContainers = containerData.groupedContainers.map(group => ({
+    ...group,
+    containers: filterContainers(group.containers)
+  })).filter(group => group.containers.length > 0);
+
+  const renderContainer = (container: ContainerData) => (
+    <div key={container.id} className="p-4 border-b border-gray-700 last:border-b-0">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4 truncate">
+          <Container size={20} className={`text-${container.State === 'running' ? 'green' : 'red'}-400`} />
+          <div className="truncate max-w-lg">
+            <h3 className="font-semibold text-white truncate max-w-xxxl select-text">{formatContainerName(container)}</h3>
+            <p className="text-sm text-gray-400 truncate max-w-xxxl select-text">{formatContainerImage(container.Image)}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <StatusBadge status={container.State ?? 'unknown'} />
+          <div className="text-sm text-gray-400 text-right truncate max-w-xs">
+            <p className="truncate max-w-xs">Created:
+              <span className="hidden lg:inline relative group cursor-pointer">
+                {formatContainerCreatedDaysAgo(container.Created)}
+                <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
+                  {formatContainerCreated(container.Created)}
+                </span>
+              </span>
+            </p>
+            <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.Ports)}</p>
+          </div>
+          <ContainerActions container={container} />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -198,33 +295,62 @@ export const ContainersTab: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid gap-4">
-        {filteredContainers.sort((a, b) => b.State.localeCompare(a.State)).map(container => (
-          <div key={container.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 truncate">
-                <Container size={20} className={`text-${container.State === 'running' ? 'green' : 'red'}-400`} />
-                <div className="truncate max-w-lg">
-                  <h3 className="font-semibold text-white truncate max-w-xxxl select-text">{formatContainerName(container)}</h3>
-                  <p className="text-sm text-gray-400 truncate max-w-xxxl select-text">{formatContainerImage(container.Image)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <StatusBadge status={container.State ?? 'unknown'} />
-                <div className="text-sm text-gray-400 text-right truncate max-w-xs">
-                  <p className="truncate max-w-xs">Created:
-                    <span className="hidden lg:inline relative group cursor-pointer">
-                      {formatContainerCreatedDaysAgo(container.Created)}
-                      <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
-                        {formatContainerCreated(container.Created)}
-                      </span>
-                    </span>
-                  </p>
-                  <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.Ports)}</p>
-                </div>
-                <ContainerActions container={container} />
+      <div className="space-y-4">
+        {/* Individual Containers */}
+        {filteredIndividualContainers.length > 0 && (
+          <div className="bg-gray-800 rounded-lg border border-gray-700">
+            <div>
+              {filteredIndividualContainers.map(renderContainer)}
+            </div>
+          </div>
+        )}
+
+        {/* Grouped Containers */}
+        {filteredGroupedContainers.map(group => (
+          <div key={group.projectName} className="bg-gray-800 rounded-lg border border-gray-700">
+            <div className="flex items-center justify-between p-4">
+              <button
+                onClick={() => toggleGroup(group.projectName)}
+                className="flex items-center gap-3 text-left hover:text-gray-300 transition-colors"
+              >
+                {group.isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                <h3 className="font-semibold text-white">{group.projectName}</h3>
+                <span className="text-sm text-gray-400">({group.containers.length} containers)</span>
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {group.containers.every(container => container.State !== 'running') && (
+                  <button
+                    className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors flex items-center gap-1"
+                    onClick={() => {
+                      // TODO: Implement start all containers in group
+                      console.log(`Start all containers in group: ${group.projectName}`);
+                    }}
+                  >
+                    <Play size={12} />
+                    Start
+                  </button>
+                )}
+                {group.containers.some(container => container.State === 'running') && (
+                  <button
+                    className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
+                    onClick={() => {
+                      // TODO: Implement stop all containers in group
+                      console.log(`Stop all containers in group: ${group.projectName}`);
+                    }}
+                  >
+                    <Square size={12} />
+                    Stop
+                  </button>
+                )}
               </div>
             </div>
+            
+            {group.isExpanded && (
+              <div className="border-t border-gray-700">
+                {group.containers.map(renderContainer)}
+              </div>
+            )}
           </div>
         ))}
       </div>
