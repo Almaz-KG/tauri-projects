@@ -41,7 +41,7 @@ function App() {
       <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 select-none flex-shrink-0" data-tauri-drag-region>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Container className="text-blue-400" size={24} />
+          <img src="/logo.png" alt="Nookat Logo" className="w-8 h-8" />
             <h1 className="text-xl font-bold">Nookat</h1>
           </div>
         </div>
