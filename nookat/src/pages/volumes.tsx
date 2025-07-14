@@ -1,39 +1,35 @@
+import { invoke } from "@tauri-apps/api/core";
 import { HardDrive, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 
 interface VolumeData {
-    id: string;
-    name: string;
-    driver: string;
-    mountpoint: string;
-    created: string;
-    size: string;
+  id: string;
+  name: string;
+  driver: string;
+  mountpoint: string;
+  created: string;
+  size: string;
+}
+
+
+export const VolumesTab: React.FC = () => {
+  const [volumes, setVolumes] = useState<VolumeData[]>([]);
+
+  async function getVolumes() {
+    try {
+      const result = await invoke<VolumeData[]>("list_volumes");
+      setVolumes(result);
+    } catch (error) {
+      console.error("Error getting volumes:", error);
+    }
   }
 
-
-  
-  const mockVolumes: VolumeData[] = [
-    {
-      id: '1',
-      name: 'postgres_data',
-      driver: 'local',
-      mountpoint: '/var/lib/docker/volumes/postgres_data/_data',
-      created: '1 day ago',
-      size: '245MB'
-    },
-    {
-      id: '2',
-      name: 'nginx_config',
-      driver: 'local',
-      mountpoint: '/var/lib/docker/volumes/nginx_config/_data',
-      created: '2 hours ago',
-      size: '12KB'
-    }
-  ];
+  useEffect(() => {
+    getVolumes();
+  }, []);
 
 
-// Volumes tab component
-export const VolumesTab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -45,7 +41,7 @@ export const VolumesTab: React.FC = () => {
       </div>
 
       <div className="grid gap-4">
-        {mockVolumes.map(volume => (
+        {volumes.map(volume => (
           <div key={volume.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

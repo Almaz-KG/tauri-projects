@@ -1,45 +1,33 @@
 import { Network, Plus, Trash2 } from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 
 interface NetworkData {
-    id: string;
-    name: string;
-    driver: string;
-    scope: string;
-    created: string;
-    containers: number;
-  }
-  
-  
-  const mockNetworks: NetworkData[] = [
-    {
-      id: '1',
-      name: 'bridge',
-      driver: 'bridge',
-      scope: 'local',
-      created: '1 week ago',
-      containers: 3
-    },
-    {
-      id: '2',
-      name: 'host',
-      driver: 'host',
-      scope: 'local',
-      created: '1 week ago',
-      containers: 0
-    },
-    {
-      id: '3',
-      name: 'none',
-      driver: 'null',
-      scope: 'local',
-      created: '1 week ago',
-      containers: 0
-    }
-  ];
+  id: string;
+  name: string;
+  driver: string;
+  scope: string;
+  created: string;
+  containers: number;
+}
 
-
-// Networks tab component
 export const NetworksTab: React.FC = () => {
+  const [networks, setNetworks] = useState<NetworkData[]>([]);
+
+  async function getNetworks() {
+    try {
+      const result = await invoke<NetworkData[]>("list_networks");
+      setNetworks(result);
+    } catch (error) {
+      console.error("Error getting networks:", error);
+    }
+  }
+
+  useEffect(() => {
+    getNetworks();
+  }, []);
+
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -51,7 +39,7 @@ export const NetworksTab: React.FC = () => {
       </div>
 
       <div className="grid gap-4">
-        {mockNetworks.map(network => (
+        {networks.map(network => (
           <div key={network.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">

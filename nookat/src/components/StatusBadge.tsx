@@ -3,13 +3,13 @@
 export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const getStatusColor = (status: string) => {
       switch (status) {
-        case 'running':
+        case 'Running':
           return 'bg-green-500';
-        case 'stopped':
+        case 'Stopped':
           return 'bg-red-500';
-        case 'paused':
+        case 'Paused':
           return 'bg-yellow-500';
-        case 'restarting':
+        case 'Restarting':
           return 'bg-blue-500';
         default:
           return 'bg-gray-500';

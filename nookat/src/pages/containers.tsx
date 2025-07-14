@@ -1,6 +1,7 @@
 import { Container, Play, RotateCcw, Search, Square, Trash2 } from "lucide-react";
-import { useState } from "react";
 import { StatusBadge } from "../components/StatusBadge";
+import { invoke } from "@tauri-apps/api/core";
+import { useState, useEffect } from "react";
 
 export interface ContainerData {
     id: string;
@@ -12,37 +13,6 @@ export interface ContainerData {
     size: string;
   }
 
-
-const mockContainers: ContainerData[] = [
-    {
-      id: '1',
-      name: 'nginx-web',
-      image: 'nginx:latest',
-      status: 'running',
-      created: '2 hours ago',
-      ports: '80:8080',
-      size: '142MB'
-    },
-    {
-      id: '2',
-      name: 'postgres-db',
-      image: 'postgres:14',
-      status: 'running',
-      created: '1 day ago',
-      ports: '5432:5432',
-      size: '374MB'
-    },
-    {
-      id: '3',
-      name: 'redis-cache',
-      image: 'redis:alpine',
-      status: 'stopped',
-      created: '3 days ago',
-      ports: '6379:6379',
-      size: '32MB'
-    }
-  ];
-    
 
 // Container actions component
 export const ContainerActions: React.FC<{ container: ContainerData }> = ({ container }) => {
@@ -70,8 +40,23 @@ export const ContainerActions: React.FC<{ container: ContainerData }> = ({ conta
 
 // Containers tab component
 export const ContainersTab: React.FC = () => {
+  const [containers, setContainers] = useState<ContainerData[]>([]);
+
+  async function getContainers() {
+    try {
+      const result = await invoke<ContainerData[]>("list_containers");
+      setContainers(result);
+    } catch (error) {
+      console.error("Error getting containers:", error);
+    }
+  }
+
+  useEffect(() => {
+    getContainers();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredContainers = mockContainers.filter(container =>
+  const filteredContainers = containers?.filter(container =>
     container.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     container.image.toLowerCase().includes(searchTerm.toLowerCase())
   );

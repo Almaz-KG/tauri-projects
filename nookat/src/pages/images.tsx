@@ -1,53 +1,35 @@
+import { invoke } from "@tauri-apps/api/core";
 import { Download, Search, Trash2, Upload, Image } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ImageData {
-    id: string;
-    repository: string;
-    tag: string;
-    imageId: string;
-    created: string;
-    size: string;
-    inUse: boolean;
-  }
-  
+  id: string;
+  repository: string;
+  tag: string;
+  imageId: string;
+  created: string;
+  size: string;
+  inUse: boolean;
+}
 
-  const mockImages: ImageData[] = [
-    {
-      id: '1',
-      repository: 'nginx',
-      tag: 'latest',
-      imageId: 'sha256:abcd1234',
-      created: '2 weeks ago',
-      size: '142MB',
-      inUse: true
-    },
-    {
-      id: '2',
-      repository: 'postgres',
-      tag: '14',
-      imageId: 'sha256:efgh5678',
-      created: '1 month ago',
-      size: '374MB',
-      inUse: true
-    },
-    {
-      id: '3',
-      repository: 'redis',
-      tag: 'alpine',
-      imageId: 'sha256:ijkl9012',
-      created: '2 months ago',
-      size: '32MB',
-      inUse: false
-    }
-  ];
-
-
-
-// Images tab component
 export const ImagesTab: React.FC = () => {
+  const [images, setImages] = useState<ImageData[]>([]);
+
+  async function getImages() {
+    try {
+      const result = await invoke<ImageData[]>("list_images");
+      setImages(result);
+    } catch (error) {
+      console.error("Error getting images:", error);
+    }
+  }
+
+  useEffect(() => {
+    getImages();
+  }, []);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredImages = mockImages.filter(image =>
+  const filteredImages = images.filter(image =>
     image.repository.toLowerCase().includes(searchTerm.toLowerCase()) ||
     image.tag.toLowerCase().includes(searchTerm.toLowerCase())
   );
