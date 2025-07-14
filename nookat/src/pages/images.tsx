@@ -81,7 +81,7 @@ export const ImagesTab: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Cloud size={20} className="text-green-400" />
-                <div className="truncate max-w-lg">
+                <div className="truncate max-w-lg select-text">
                   <h3 className="font-semibold text-white truncate max-w-xxxl">{image.repository} : {image.tag}</h3>
                   <p className="text-sm text-gray-400 font-mono truncate text-ellipsis max-w-xxxl">{image.id}</p>
                 </div>

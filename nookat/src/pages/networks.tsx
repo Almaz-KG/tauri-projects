@@ -64,7 +64,7 @@ export const NetworksTab: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Network size={20} className="text-purple-400" />
-                <div>
+                <div className="select-text">
                   <h3 className="font-semibold text-white">{network.Name}</h3>
                   <p className="text-sm text-gray-400">Driver: {network.Driver}</p>
                 </div>

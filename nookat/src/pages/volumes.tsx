@@ -48,7 +48,7 @@ export const VolumesTab: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <HardDrive size={20} className="text-yellow-400" />
-                <div className="truncate text-ellipsis max-w-lg">
+                <div className="truncate text-ellipsis max-w-lg select-text">
                   <h3 className="font-semibold text-white">{volume.Name}</h3>
                   <p className="text-sm text-gray-400 font-mono">{volume.Mountpoint}</p>
                 </div>

@@ -38,7 +38,7 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4">
+      <header className="bg-gray-800 border-b border-gray-700 px-6 py-4 select-none" data-tauri-drag-region>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Container className="text-blue-400" size={24} />
@@ -49,7 +49,7 @@ function App() {
 
       <div className="flex">
         {/* Sidebar */}
-        <nav className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen">
+        <nav className="w-64 bg-gray-800 border-r border-gray-700 min-h-screen select-none">
           <div className="p-4">
             <div className="space-y-2">
               {tabs.map(tab => {
@@ -73,7 +73,7 @@ function App() {
         </nav>
 
         {/* Main content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 select-none">
           {renderTabContent()}
         </main>
       </div>

@@ -205,8 +205,8 @@ export const ContainersTab: React.FC = () => {
               <div className="flex items-center gap-4 truncate">
                 <Container size={20} className={`text-${container.State === 'running' ? 'green' : 'red'}-400`} />
                 <div className="truncate max-w-lg">
-                  <h3 className="font-semibold text-white truncate max-w-xxxl">{formatContainerName(container)}</h3>
-                  <p className="text-sm text-gray-400 truncate max-w-xxxl">{formatContainerImage(container.Image)}</p>
+                  <h3 className="font-semibold text-white truncate max-w-xxxl select-text">{formatContainerName(container)}</h3>
+                  <p className="text-sm text-gray-400 truncate max-w-xxxl select-text">{formatContainerImage(container.Image)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
