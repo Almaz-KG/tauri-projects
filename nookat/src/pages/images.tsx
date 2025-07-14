@@ -4,12 +4,25 @@ import { useEffect, useState } from "react";
 
 interface ImageData {
   id: string;
-  repository: string;
-  tag: string;
+  repository: string | null;
+  tag: string | null;
   imageId: string;
-  created: string;
-  size: string;
+  created: number;
+  size: number;
   inUse: boolean;
+}
+
+function formatSize(size: number) {
+  if (size < 1024) {
+    return `${size.toFixed(2)} bytes`;
+  }
+  if (size < 1024 * 1024) {
+    return `${(size / 1024).toFixed(2)} Kb`;
+  }
+  if (size < 1024 * 1024 * 1024) {
+    return `${(size / 1024 / 1024).toFixed(2)} Mb`;
+  }
+  return `${(size / 1024 / 1024 / 1024).toFixed(2)} Gb`;
 }
 
 export const ImagesTab: React.FC = () => {
@@ -18,6 +31,7 @@ export const ImagesTab: React.FC = () => {
   async function getImages() {
     try {
       const result = await invoke<ImageData[]>("list_images");
+      console.log(result);
       setImages(result);
     } catch (error) {
       console.error("Error getting images:", error);
@@ -29,10 +43,11 @@ export const ImagesTab: React.FC = () => {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredImages = images.filter(image =>
-    image.repository.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    image.tag.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredImages = images;
+  // const filteredImages = images.filter(image =>
+  //   image.repository?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   image.tag?.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className="space-y-6">
@@ -67,8 +82,8 @@ export const ImagesTab: React.FC = () => {
               <div className="flex items-center gap-4">
                 <Cloud size={20} className="text-green-400" />
                 <div>
-                  <h3 className="font-semibold text-white">{image.repository}:{image.tag}</h3>
-                  <p className="text-sm text-gray-400 font-mono">{image.imageId}</p>
+                  <h3 className="font-semibold text-white truncate max-w-xs">{image.repository} : {image.tag}</h3>
+                  {/* <p className="text-sm text-gray-400 font-mono truncate text-ellipsis">{image.id}</p> */}
                 </div>
               </div>
               <div className="flex items-center gap-8">
@@ -77,8 +92,8 @@ export const ImagesTab: React.FC = () => {
                   <span className="text-sm font-medium">{image.inUse ? 'In Use' : 'Unused'}</span>
                 </div>
                 <div className="text-sm text-gray-400 text-right">
-                  <p>Created: {image.created}</p>
-                  <p>Size: {image.size}</p>
+                  <p>Created: {new Date(image.created * 1000).toLocaleString()}</p>
+                  <p>Size: {formatSize(image.size)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button className="p-1 text-gray-400 hover:text-red-400 transition-colors">
