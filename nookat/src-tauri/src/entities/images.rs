@@ -72,5 +72,5 @@ pub async fn list_images() -> Vec<Image> {
     println!("Listing images");
 
     let images = get_images().await;
-    return get_images().await;
+    return images;
 }

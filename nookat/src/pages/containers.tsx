@@ -1,42 +1,146 @@
-import { Container, Play, RotateCcw, Search, Square, Trash2 } from "lucide-react";
+import { Container, Play, RotateCcw, Search, Square, Trash2, Terminal, FileSearch, Folder } from "lucide-react";
 import { StatusBadge } from "../components/StatusBadge";
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect } from "react";
 
 export interface ContainerData {
-    id: string;
-    name: string;
-    image: string;
-    status: 'running' | 'stopped' | 'paused' | 'restarting';
-    created: string;
-    ports: string;
-    size: string;
-  }
+  id: string;
+  Names: string[];
+  Image: string;
+  State: 'running' | 'stopped' | 'paused' | 'restarting';
+  Created: number;
+  Ports: string[];
+  size: string;
+}
 
 
-// Container actions component
 export const ContainerActions: React.FC<{ container: ContainerData }> = ({ container }) => {
   return (
     <div className="flex items-center gap-2">
-      {container.status === 'running' ? (
-        <button className="p-1 text-gray-400 hover:text-red-400 transition-colors">
+      {container.State?.toLowerCase() === 'running' ? (
+        <button
+          className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
+          type="button"
+          aria-label="Stop container"
+        >
+          <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+            Stop container
+          </span>
           <Square size={16} />
         </button>
       ) : (
-        <button className="p-1 text-gray-400 hover:text-green-400 transition-colors">
+        <button
+          className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
+          type="button"
+          aria-label="Start container"
+        >
+          <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+            Start container
+          </span>
           <Play size={16} />
         </button>
       )}
-      <button className="p-1 text-gray-400 hover:text-blue-400 transition-colors">
+      <button
+        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
+        type="button"
+        aria-label="Restart container"
+      >
+        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+          Restart container
+        </span>
         <RotateCcw size={16} />
       </button>
-      <button className="p-1 text-gray-400 hover:text-red-400 transition-colors">
+
+      <button
+        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
+        type="button"
+        aria-label="Open terminal in container"
+      >
+        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+          Open terminal
+        </span>
+        <Terminal size={16} />
+      </button>
+
+      <button
+        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
+        type="button"
+        aria-label="Search logs"
+      >
+        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+          Search logs
+        </span>
+        <FileSearch size={16} />
+      </button>
+
+
+      <button
+        type="button"
+        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
+        aria-label="View files"
+      >
+        <Folder size={16} />
+        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+          View files
+        </span>
+      </button>
+
+
+      <button
+        type="button"
+        className="p-1 text-gray-400 hover:text-red-400 transition-colors relative group"
+        aria-label="Remove container"
+      >
         <Trash2 size={16} />
+        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+          Remove container
+        </span>
       </button>
     </div>
   );
 };
 
+function formatContainerName(container: ContainerData) {
+  if (container.Names.length > 0) {
+    let first_name = container.Names[0];
+    if (first_name.startsWith("/")) {
+      first_name = first_name.slice(1);
+    }
+    return first_name;
+  }
+  return "";
+}
+
+function formatContainerImage(image: string) {
+  if (image.includes("@")) {
+    return image.split("@")[0];
+  }
+  return image;
+}
+
+function formatContainerPortMapping(ports: string[]) {
+  if (ports && ports.length > 0) {
+    const mappings = ports.map(port => {
+      const privatePort = port.PrivatePort;
+      const publicPort = port.PublicPort; 
+      return `${privatePort}:${publicPort}`;
+    });
+    const uniqueMappings = Array.from(new Set(mappings));
+    return uniqueMappings.join(", ");
+  }
+  return "No port mapping";
+}
+
+function formatContainerCreated(created: number) {
+  const date = new Date(created * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 
 // Containers tab component
 export const ContainersTab: React.FC = () => {
@@ -46,6 +150,7 @@ export const ContainersTab: React.FC = () => {
     try {
       const result = await invoke<ContainerData[]>("list_containers");
       setContainers(result);
+      console.log(result);
     } catch (error) {
       console.error("Error getting containers:", error);
     }
@@ -56,10 +161,12 @@ export const ContainersTab: React.FC = () => {
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredContainers = containers?.filter(container =>
-    container.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    container.image.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredContainers = containers?.filter(container =>
+  //   container.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   container.image.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
+
+  const filteredContainers = containers;
 
   return (
     <div className="space-y-6">
@@ -86,18 +193,15 @@ export const ContainersTab: React.FC = () => {
               <div className="flex items-center gap-4">
                 <Container size={20} className="text-blue-400" />
                 <div>
-                  <h3 className="font-semibold text-white">{container.name}</h3>
-                  <p className="text-sm text-gray-400">{container.image}</p>
+                  <h3 className="font-semibold text-white truncate max-w-xxxl">{formatContainerName(container)}</h3>
+                  <p className="text-sm text-gray-400 truncate max-w-xxxl">{formatContainerImage(container.Image)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-8">
-                <StatusBadge status={container.status} />
+                <StatusBadge status={container.State ?? 'unknown'} />
                 <div className="text-sm text-gray-400 text-right">
-                  <p>Created: {container.created}</p>
-                  <p>Ports: {container.ports}</p>
-                </div>
-                <div className="text-sm text-gray-400">
-                  <p>Size: {container.size}</p>
+                  <p>Created: {formatContainerCreated(container.Created)}</p>
+                  <p>Ports: {formatContainerPortMapping(container.Ports)}</p>
                 </div>
                 <ContainerActions container={container} />
               </div>
