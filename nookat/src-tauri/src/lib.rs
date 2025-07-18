@@ -1,34 +1,17 @@
 mod entities;
+mod handlers;
+mod services;
 
-use crate::entities::list_containers;
 use crate::entities::list_images;
 use crate::entities::list_networks;
 use crate::entities::list_volumes;
-use crate::entities::SystemInfo;
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-fn get_system_info() -> Result<SystemInfo, String> {
-    println!("Getting system info");
-    Ok(SystemInfo {
-        cpu_usage: 10.0,
-        memory_usage: 20.0,
-        disk_usage: 30.0,
-    })
-}
+use crate::handlers::list_containers;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            greet,
-            get_system_info,
             list_containers,
             list_images,
             list_networks,

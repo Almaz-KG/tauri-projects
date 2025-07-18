@@ -5,13 +5,13 @@ import { useState, useEffect } from "react";
 
 export interface ContainerData {
   id: string;
-  Names: string[];
-  Image: string;
-  State: 'running' | 'stopped' | 'paused' | 'restarting';
-  Created: number;
-  Ports: object[];
-  Size: string;
-  Labels: Record<string, string>;
+  names: string[];
+  image: string;
+  state: 'running' | 'stopped' | 'paused' | 'restarting';
+  created: number;
+  ports: object[];
+  size: string;
+  labels: Record<string, string>;
 }
 
 interface ContainerGroup {
@@ -28,7 +28,7 @@ interface ContainerDisplayData {
 export const ContainerActions: React.FC<{ container: ContainerData }> = ({ container }) => {
   return (
     <div className="flex items-center gap-2">
-      {container.State?.toLowerCase() === 'running' ? (
+      {container.state?.toLowerCase() === 'running' ? (
         <button
           className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
           type="button"
@@ -112,8 +112,8 @@ export const ContainerActions: React.FC<{ container: ContainerData }> = ({ conta
 };
 
 function formatContainerName(container: ContainerData) {
-  if (container.Names.length > 0) {
-    let first_name = container.Names[0];
+  if (container.names.length > 0) {
+    let first_name = container.names[0];
     if (first_name.startsWith("/")) {
       first_name = first_name.slice(1);
     }
@@ -166,8 +166,8 @@ function formatContainerCreated(created: number) {
 
 function getProjectName(container: ContainerData): string | null {
   console.log(container);
-  console.log(container.Labels);
-  return container.Labels && container.Labels["com.docker.compose.project"] || null;
+  console.log(container.labels);
+  return container.labels && container.labels["com.docker.compose.project"] || null;
 }
 
 function organizeContainers(containers: ContainerData[]): ContainerDisplayData {
@@ -190,7 +190,7 @@ function organizeContainers(containers: ContainerData[]): ContainerDisplayData {
   });
 
   // Sort containers by creation time (newest first)
-  const sortByCreatedTime = (a: ContainerData, b: ContainerData) => b.Created - a.Created;
+  const sortByCreatedTime = (a: ContainerData, b: ContainerData) => b.created - a.created;
 
   const groups: ContainerGroup[] = Object.entries(groupedContainers).map(([projectName, containers]) => ({
     projectName,
@@ -200,8 +200,8 @@ function organizeContainers(containers: ContainerData[]): ContainerDisplayData {
 
   // Sort groups by the creation time of their newest container
   const sortedGroups = groups.sort((a, b) => {
-    const newestA = Math.max(...a.containers.map(c => c.Created));
-    const newestB = Math.max(...b.containers.map(c => c.Created));
+    const newestA = Math.max(...a.containers.map(c => c.created));
+    const newestB = Math.max(...b.containers.map(c => c.created));
     return newestB - newestA;
   });
 
@@ -248,7 +248,7 @@ export const ContainersTab: React.FC = () => {
   const filterContainers = (containers: ContainerData[]) => {
     return containers.filter(container =>
       formatContainerName(container).toLowerCase().includes(searchTerm.toLowerCase()) ||
-      formatContainerImage(container.Image).toLowerCase().includes(searchTerm.toLowerCase())
+      formatContainerImage(container.image).toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
 
@@ -265,21 +265,21 @@ export const ContainersTab: React.FC = () => {
           <Container size={20} className={`text-${container.State === 'running' ? 'green' : 'red'}-400`} />
           <div className="truncate max-w-lg">
             <h3 className="font-semibold text-white truncate max-w-xxxl select-text">{formatContainerName(container)}</h3>
-            <p className="text-sm text-gray-400 truncate max-w-xxxl select-text">{formatContainerImage(container.Image)}</p>
+            <p className="text-sm text-gray-400 truncate max-w-xxxl select-text">{formatContainerImage(container.image)}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <StatusBadge status={container.State ?? 'unknown'} />
+          <StatusBadge status={container.state ?? 'unknown'} />
           <div className="text-sm text-gray-400 text-right truncate max-w-xs">
             <p className="truncate max-w-xs">Created:
               <span className="hidden lg:inline relative group cursor-pointer">
-                {formatContainerCreatedDaysAgo(container.Created)}
+                {formatContainerCreatedDaysAgo(container.created)}
                 <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
-                  {formatContainerCreated(container.Created)}
+                  {formatContainerCreated(container.created)}
                 </span>
               </span>
             </p>
-            <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.Ports)}</p>
+            <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.ports)}</p>
           </div>
           <ContainerActions container={container} />
         </div>
@@ -329,7 +329,7 @@ export const ContainersTab: React.FC = () => {
               </button>
               
               <div className="flex items-center gap-2">
-                {group.containers.every(container => container.State !== 'running') && (
+                {group.containers.every(container => container.state !== 'running') && (
                   <button
                     className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors flex items-center gap-1"
                     onClick={() => {
@@ -341,7 +341,7 @@ export const ContainersTab: React.FC = () => {
                     Start
                   </button>
                 )}
-                {group.containers.some(container => container.State === 'running') && (
+                {group.containers.some(container => container.state === 'running') && (
                   <button
                     className="px-3 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
                     onClick={() => {
