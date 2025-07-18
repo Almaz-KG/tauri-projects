@@ -1,5 +1,5 @@
 use bollard::models::ContainerSummary;
-use bollard::query_parameters::ListContainersOptionsBuilder;
+use bollard::query_parameters::{ListContainersOptionsBuilder, RemoveContainerOptions};
 use bollard::Docker;
 
 #[derive(Default, Debug)]
@@ -20,5 +20,14 @@ impl ContainersService {
             .expect("Failed to list containers");
 
         containers.iter().map(|c| c.clone()).collect()
+    }
+
+
+    pub async fn remove_container(id: String) -> Result<(), String> {
+        let docker = Docker::connect_with_local_defaults().unwrap();
+
+        docker.remove_container(&id, Some(RemoveContainerOptions::default())).await.unwrap();
+
+        Ok(())
     }
 }

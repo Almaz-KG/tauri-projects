@@ -1,7 +1,8 @@
-import { Container, Play, RotateCcw, Search, Square, Trash2, Terminal, FileSearch, Folder, ChevronDown, ChevronRight } from "lucide-react";
+import { Container, Play, Search, Square, ChevronDown, ChevronRight } from "lucide-react";
 import { StatusBadge } from "../components/StatusBadge";
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect } from "react";
+import { ContainerActions } from "../components/ContainerActions";
 
 export interface ContainerData {
   id: string;
@@ -24,92 +25,6 @@ interface ContainerDisplayData {
   individualContainers: ContainerData[];
   groupedContainers: ContainerGroup[];
 }
-
-export const ContainerActions: React.FC<{ container: ContainerData }> = ({ container }) => {
-  return (
-    <div className="flex items-center gap-2">
-      {container.state?.toLowerCase() === 'running' ? (
-        <button
-          className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
-          type="button"
-          aria-label="Stop container"
-        >
-          <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-            Stop container
-          </span>
-          <Square size={16} />
-        </button>
-      ) : (
-        <button
-          className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
-          type="button"
-          aria-label="Start container"
-        >
-          <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-            Start container
-          </span>
-          <Play size={16} />
-        </button>
-      )}
-      <button
-        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
-        type="button"
-        aria-label="Restart container"
-      >
-        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-          Restart container
-        </span>
-        <RotateCcw size={16} />
-      </button>
-
-      <button
-        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
-        type="button"
-        aria-label="Open terminal in container"
-      >
-        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-          Open terminal
-        </span>
-        <Terminal size={16} />
-      </button>
-
-      <button
-        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
-        type="button"
-        aria-label="Search logs"
-      >
-        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-          Search logs
-        </span>
-        <FileSearch size={16} />
-      </button>
-
-
-      <button
-        type="button"
-        className="p-1 text-gray-400 hover:text-blue-400 transition-colors relative group"
-        aria-label="View files"
-      >
-        <Folder size={16} />
-        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-          View files
-        </span>
-      </button>
-
-
-      <button
-        type="button"
-        className="p-1 text-gray-400 hover:text-red-400 transition-colors relative group"
-        aria-label="Remove container"
-      >
-        <Trash2 size={16} />
-        <span className="absolute left-1/2 -translate-x-1/2 -top-8 z-10 whitespace-nowrap bg-gray-800 text-xs text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-          Remove container
-        </span>
-      </button>
-    </div>
-  );
-};
 
 function formatContainerName(container: ContainerData) {
   if (container.names.length > 0) {
@@ -173,10 +88,10 @@ function getProjectName(container: ContainerData): string | null {
 function organizeContainers(containers: ContainerData[]): ContainerDisplayData {
   const individualContainers: ContainerData[] = [];
   const groupedContainers: Record<string, ContainerData[]> = {};
-  
+
   containers.forEach(container => {
     const projectName = getProjectName(container);
-    
+
     if (projectName) {
       // Container belongs to a compose project
       if (!groupedContainers[projectName]) {
@@ -237,8 +152,8 @@ export const ContainersTab: React.FC = () => {
   const toggleGroup = (projectName: string) => {
     setContainerData(prev => ({
       ...prev,
-      groupedContainers: prev.groupedContainers.map(group => 
-        group.projectName === projectName 
+      groupedContainers: prev.groupedContainers.map(group =>
+        group.projectName === projectName
           ? { ...group, isExpanded: !group.isExpanded }
           : group
       )
@@ -258,7 +173,7 @@ export const ContainersTab: React.FC = () => {
     containers: filterContainers(group.containers)
   })).filter(group => group.containers.length > 0);
 
-  const renderContainer = (container: ContainerData) => (
+  const renderContainer = (container: ContainerData, onUpdate: () => void) => (
     <div key={container.id} className="p-4 border-b border-gray-700 last:border-b-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 truncate">
@@ -279,9 +194,12 @@ export const ContainersTab: React.FC = () => {
                 </span>
               </span>
             </p>
-            <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.ports)}</p>
+            {
+              (container.ports && container.ports.length > 0) &&
+              <p className="hidden lg:block">Ports: {formatContainerPortMapping(container.ports)}</p>
+            }
           </div>
-          <ContainerActions container={container} />
+          <ContainerActions container={container} onStateChanged={onUpdate} />
         </div>
       </div>
     </div>
@@ -310,7 +228,7 @@ export const ContainersTab: React.FC = () => {
         {filteredIndividualContainers.length > 0 && (
           <div className="bg-gray-800 rounded-lg border border-gray-700">
             <div>
-              {filteredIndividualContainers.map(renderContainer)}
+              {filteredIndividualContainers.map(container => renderContainer(container, getContainers))}
             </div>
           </div>
         )}
@@ -327,7 +245,7 @@ export const ContainersTab: React.FC = () => {
                 <h3 className="font-semibold text-white">{group.projectName}</h3>
                 <span className="text-sm text-gray-400">({group.containers.length} containers)</span>
               </button>
-              
+
               <div className="flex items-center gap-2">
                 {group.containers.every(container => container.state !== 'running') && (
                   <button
@@ -355,10 +273,10 @@ export const ContainersTab: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             {group.isExpanded && (
               <div className="border-t border-gray-700">
-                {group.containers.map(renderContainer)}
+                {group.containers.map(container => renderContainer(container, getContainers))}
               </div>
             )}
           </div>
